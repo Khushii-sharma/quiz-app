@@ -1,6 +1,6 @@
 # Quiz App
 
-An interactive, responsive ##Multiple Choice Quiz Application** built for the Edzy.Ai.
+An interactive, responsive **Multiple Choice Quiz Application** built for the Edzy.Ai.
 The app allows students to select a subject, attempt quizzes question-by-question, receive instant feedback, and view a detailed summary at the end.
 
 ---
