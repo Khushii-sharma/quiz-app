@@ -1,6 +1,4 @@
 "use client";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -12,10 +10,11 @@ import {
   ChevronRight,
 } from "lucide-react";
 import confetti from "canvas-confetti";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, Suspense } from "react"; // Added Suspense import
 import Image from "next/image";
 
-export default function SummaryPage() {
+// 1. Move your original logic into this internal component
+function SummaryContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -52,10 +51,8 @@ export default function SummaryPage() {
         className="w-full max-w-md"
       >
         <div className="bg-white rounded-[2.5rem] shadow-2xl border border-slate-100 p-8 sm:p-10 text-center relative">
-          {/* Top Shine Effect */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-transparent via-blue-500 to-transparent opacity-50" />
 
-          {/* Logo */}
           <div className="flex justify-center mb-6">
             <Image
               src="/logo.svg"
@@ -73,10 +70,7 @@ export default function SummaryPage() {
             You've completed the challenge!
           </p>
 
-          {/* ANALYSIS & TIME TAKEN */}
           <div className="grid grid-cols-2 gap-4 mb-8">
-            
-            {/* Analysis */}
             <div className="bg-emerald-50 border border-emerald-100 p-5 rounded-3xl">
               <div className="flex justify-center mb-2">
                 <CheckCircle2 className="w-6 h-6 text-emerald-500" />
@@ -89,7 +83,6 @@ export default function SummaryPage() {
               </p>
             </div>
 
-            {/* Time Taken */}
             <div className="bg-slate-50 border border-slate-100 p-5 rounded-3xl">
               <div className="flex justify-center mb-2">
                 <Clock className="w-6 h-6 text-slate-500" />
@@ -101,11 +94,8 @@ export default function SummaryPage() {
                 {minutes}:{seconds}
               </p>
             </div>
-
           </div>
 
-
-          {/* Buttons */}
           <div className="space-y-3">
             <Button
               onClick={() => router.push("/")}
@@ -130,5 +120,14 @@ export default function SummaryPage() {
         </div>
       </motion.div>
     </div>
+  );
+}
+
+// 2. Wrap the logic in Suspense to satisfy Next.js build requirements
+export default function SummaryPage() {
+  return (
+    <Suspense fallback={null}>
+      <SummaryContent />
+    </Suspense>
   );
 }

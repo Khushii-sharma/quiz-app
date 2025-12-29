@@ -1,16 +1,13 @@
 "use client";
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
 
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useState, useRef } from "react";
-
 import { fetchQuiz } from "@/utils/api";
 import QuestionCard from "@/components/QuestionCard";
 import ProgressBar from "@/components/ProgressBar";
 
-export default function QuizPage() {
+function QuizContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -19,6 +16,7 @@ export default function QuizPage() {
 
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
+  const [unattempted, setUnattempted] = useState(0);
 
   // Track quiz start time
   const quizStartTime = useRef(Date.now());
@@ -34,15 +32,18 @@ export default function QuizPage() {
 
   const questions = data?.questions || [];
   const currentQuestion = questions[current];
-
   const progress = (current / questions.length) * 100;
 
-  const finishQuiz = (finalScore) => {
+  const finishQuiz = (finalScore, finalUnattempted) => {
     const quizEndTime = Date.now();
     const timeTaken = Math.floor((quizEndTime - quizStartTime.current) / 1000);
+    const totalCount = questions.length;
+    
+    // Calculate accuracy to pass to Summary Page
+    const accuracy = totalCount > 0 ? Math.round((finalScore / totalCount) * 100) : 0;
 
     router.push(
-      `/summary?score=${finalScore}&total=${questions.length}&time=${timeTaken}`
+      `/summary?score=${finalScore}&total=${totalCount}&time=${timeTaken}&accuracy=${accuracy}&unattempted=${finalUnattempted}`
     );
   };
 
@@ -53,15 +54,18 @@ export default function QuizPage() {
     if (current + 1 < questions.length) {
       setCurrent((prev) => prev + 1);
     } else {
-      finishQuiz(newScore);
+      finishQuiz(newScore, unattempted);
     }
   };
 
   const handleTimeUp = () => {
+    const newUnattempted = unattempted + 1;
+    setUnattempted(newUnattempted);
+
     if (current + 1 < questions.length) {
       setCurrent((prev) => prev + 1);
     } else {
-      finishQuiz(score);
+      finishQuiz(score, newUnattempted);
     }
   };
 
@@ -80,5 +84,14 @@ export default function QuizPage() {
         )}
       </div>
     </div>
+  );
+}
+
+// Wrapping in Suspense 
+export default function QuizPage() {
+  return (
+    <Suspense fallback={null}>
+      <QuizContent />
+    </Suspense>
   );
 }
