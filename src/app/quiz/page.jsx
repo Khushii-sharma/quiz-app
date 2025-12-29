@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useRef } from "react";
 
 import { fetchQuiz } from "@/utils/api";
 import QuestionCard from "@/components/QuestionCard";
@@ -13,77 +13,70 @@ export default function QuizPage() {
   const router = useRouter();
 
   const subject = searchParams.get("subject");
-  const numQuestions = Number(searchParams.get("numQuestions"));
+  const totalQuestions = Number(searchParams.get("numQuestions"));
 
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
-  const [incorrectCount, setIncorrectCount] = useState(0);
+
+  // Track quiz start time
+  const quizStartTime = useRef(Date.now());
 
   const { data, isLoading, error } = useQuery({
-    queryKey: ["quiz", subject, numQuestions],
-    queryFn: () => fetchQuiz(subject, numQuestions),
-    enabled: !!subject && !!numQuestions,
+    queryKey: ["quiz", subject, totalQuestions],
+    queryFn: () => fetchQuiz(subject, totalQuestions),
+    enabled: !!subject && !!totalQuestions,
   });
 
-  if (isLoading)
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading quiz...
-      </div>
-    );
-
-  if (error)
-    return (
-      <div className="min-h-screen flex items-center justify-center text-red-500">
-        Error fetching quiz
-      </div>
-    );
+  if (isLoading) return null;
+  if (error) return <p>Error loading quiz</p>;
 
   const questions = data?.questions || [];
   const currentQuestion = questions[current];
 
+  const progress = (current / questions.length) * 100;
+
+  const finishQuiz = (finalScore) => {
+    const quizEndTime = Date.now();
+    const timeTaken = Math.floor((quizEndTime - quizStartTime.current) / 1000);
+
+    router.push(
+      `/summary?score=${finalScore}&total=${questions.length}&time=${timeTaken}`
+    );
+  };
+
   const handleCorrect = () => {
-    setScore((prev) => prev + 1);
-    goToNext();
-  };
+    const newScore = score + 1;
+    setScore(newScore);
 
-  const handleIncorrect = () => {
-    setIncorrectCount((prev) => prev + 1);
-  };
-
-  const handleTimeUp = () => {
-    setIncorrectCount((prev) => prev + 1);
-    goToNext();
-  };
-
-  const goToNext = () => {
     if (current + 1 < questions.length) {
       setCurrent((prev) => prev + 1);
     } else {
-      router.push(
-        `/summary?score=${score}&total=${questions.length}&incorrect=${incorrectCount}`
-      );
+      finishQuiz(newScore);
+    }
+  };
+
+  const handleTimeUp = () => {
+    if (current + 1 < questions.length) {
+      setCurrent((prev) => prev + 1);
+    } else {
+      finishQuiz(score);
     }
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-      {/* Progress bar */}
-      <ProgressBar
-        current={current + 1}
-        total={questions.length}
-        resetKey={current}
-        onTimeUp={handleTimeUp}
-      />
+    <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4">
+      <div className="w-full max-w-xl mt-6">
+        <ProgressBar progress={progress} />
 
-      {/* Question card */}
-      {currentQuestion && (
-        <QuestionCard
-          question={currentQuestion}
-          onCorrect={handleCorrect}
-          onIncorrect={handleIncorrect}
-        />
-      )}
+        {currentQuestion && (
+          <QuestionCard
+            key={current}
+            question={currentQuestion}
+            onCorrect={handleCorrect}
+            onTimeUp={handleTimeUp}
+          />
+        )}
+      </div>
     </div>
   );
 }
