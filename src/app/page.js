@@ -64,7 +64,7 @@ export default function Home() {
           {/* Heading */}
           <div className="text-center mb-10">
             <h1 className="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight mb-3">
-              Edzy<span className="text-blue-600">Quiz</span>
+              Quiz<span className="text-blue-600">App</span>
             </h1>
             <p className="text-slate-500 font-medium">
               Master your subjects with interactive practice

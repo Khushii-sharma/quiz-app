@@ -56,7 +56,7 @@ function SummaryContent() {
           <div className="flex justify-center mb-6">
             <Image
               src="/logo.svg"
-              alt="Edzy Logo"
+              alt="Logo"
               width={60}
               height={60}
               className="object-contain rounded-full"
@@ -115,7 +115,7 @@ function SummaryContent() {
           </div>
 
           <p className="mt-8 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            EDZY PRACTICE • DAILY GOALS
+            QUIZ PRACTICE • DAILY GOALS
           </p>
         </div>
       </motion.div>
