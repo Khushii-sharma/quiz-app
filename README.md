@@ -52,7 +52,3 @@ The app runs locally at: `http://localhost:3000`
 
 ### Author:
 Khushi | sharmakhushi1501@gmail.com
-<<<<<<< HEAD
-=======
-
->>>>>>> 97cde80 (Improve quiz flow, timer, summary analysis, and UI polish)
